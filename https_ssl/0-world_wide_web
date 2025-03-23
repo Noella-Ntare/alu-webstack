@@ -1,35 +1,14 @@
 #!/usr/bin/env bash
-# Script to display information about domain and subdomains
+# script to config domain zone to point to load balancer
+# add more subdomains and display info about them
 
-get_record_info() {
-    # Use dig to query DNS and awk to extract information
-    local domain="$1"
-    local subdomain="$2"
-    
-    # Get the DNS record information
-    local record_info
-    record_info=$(dig "$subdomain.$domain" | grep -A1 'ANSWER SECTION:')
-    
-    # Parse the information using awk
-    local record_type
-    local destination
-    record_type=$(echo "$record_info" | awk 'NR==2 {print $4}')
-    destination=$(echo "$record_info" | awk 'NR==2 {print $5}')
-    
-    # Display the information
-    echo "The subdomain $subdomain is a $record_type record and points to $destination"
-}
-
-# Main script logic
-domain="$1"
-subdomain="$2"
-
-if [ -z "$subdomain" ]; then
-    # If no subdomain is specified, check default subdomains
-    for sub in "www" "lb-01" "web-01" "web-02"; do
-        get_record_info "$domain" "$sub"
-    done
+domain=$1
+if [ "$#" -eq 2 ]; then
+   sub=$2
 else
-    # If a specific subdomain is provided
-    get_record_info "$domain" "$subdomain"
+	sub=("www" "lb-01" "web-01" "web-02")
 fi
+for subdomain in "${sub[@]}"; do
+    echo -n "The subdomain $subdomain"
+    dig "$subdomain.$domain" | grep -A1 'ANSWER SECTION:' | tail -n -1 | awk '{ print " is a " $4 " record and points to " $5}'
+done
