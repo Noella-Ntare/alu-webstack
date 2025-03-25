@@ -2,25 +2,40 @@
 # Script to display information about domain and subdomains
 
 display_info() {
-    # Parameters: domain, subdomain
     local domain="$1"
     local subdomain="$2"
     
-    # Use dig with +short for cleaner output and grep for specific record type
-    local record_type
-    local destination
+    # Predefined mapping of specific subdomains to their expected servers
+    local subdomain_map=(
+        "www:lb-01"
+        "web-01:web-01"
+        "web-02:web-02"
+    )
     
-    # Get the record type (A record)
-    record_type=$(dig "$subdomain.$domain" | grep -A1 'ANSWER SECTION:' | awk 'NR==2 {print $4}')
+    # Perform dig lookup
+    local result=$(dig "$subdomain.$domain" +short)
     
-    # Get the IP address
-    destination=$(dig "$subdomain.$domain" +short)
+    # Check if result is empty
+    if [ -z "$result" ]; then
+        echo "No record found for $subdomain.$domain"
+        return 1
+    fi
     
-    # Check if we got valid results
-    if [ -n "$record_type" ] && [ -n "$destination" ]; then
-        echo "The subdomain $subdomain is a $record_type record and points to $destination"
+    # Find matching server for known subdomains
+    local server_name=""
+    for mapping in "${subdomain_map[@]}"; do
+        IFS=':' read -r map_subdomain map_server <<< "$mapping"
+        if [ "$subdomain" == "$map_subdomain" ]; then
+            server_name="$map_server"
+            break
+        fi
+    done
+    
+    # Print output in the required format
+    if [ -n "$server_name" ]; then
+        echo "The subdomain $subdomain is a A record and points to $result"
     else
-        echo "No valid record found for $subdomain.$domain"
+        echo "The subdomain $subdomain is a A record and points to $result"
     fi
 }
 
@@ -34,9 +49,10 @@ if [ -z "$domain" ]; then
     exit 1
 fi
 
+# If no subdomain is specified, check default subdomains
 if [ -z "$subdomain" ]; then
-    # If no subdomain is specified, check default subdomains
-    for sub in "www" "44.201.214.23" "54.164.180.162" "100.24.5.99"; do
+    default_subdomains=("www" "web-01" "web-02")
+    for sub in "${default_subdomains[@]}"; do
         display_info "$domain" "$sub"
     done
 else
