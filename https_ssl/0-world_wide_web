@@ -1,74 +1,56 @@
 #!/usr/bin/env bash
-# script to config domain zone to point to load balancer
-# add more subdomains and display info about them
+# This script provides information about domain and subdomain records
 
-<<<<<<< HEAD
-display_info() {
-    local domain="$1"
-    local subdomain="$2"
+# Function to get subdomain information
+get_subdomain_info() {
+    local domain=$1
+    local subdomain=$2
     
-    # Predefined mapping of specific subdomains to their expected servers
-    local subdomain_map=(
-        "www:lb-01"
-        "web-01:web-01"
-        "web-02:web-02"
+    # Predefined subdomains with their expected IPs
+    declare -A expected_ips=(
+        ["www"]="44.201.214.235"     # lb-01 IP
+        ["lb-01"]="44.201.214.235"   # lb-01 IP
+        ["web-01"]="54.164.180.162"  # web-01 IP
+        ["web-02"]="100.24.5.99"    # web-02 IP
     )
+
+    # Dig the subdomain
+    local record
+    record=$(dig "$subdomain"."$domain" | grep -A1 'ANSWER SECTION:')
     
-    # Perform dig lookup
-    local result=$(dig "$subdomain.$domain" +short)
-    
-    # Check if result is empty
-    if [ -z "$result" ]; then
-        echo "No record found for $subdomain.$domain"
-        return 1
-    fi
-    
-    # Find matching server for known subdomains
-    local server_name=""
-    for mapping in "${subdomain_map[@]}"; do
-        IFS=':' read -r map_subdomain map_server <<< "$mapping"
-        if [ "$subdomain" == "$map_subdomain" ]; then
-            server_name="$map_server"
-            break
-        fi
-    done
-    
-    # Print output in the required format
-    if [ -n "$server_name" ]; then
-        echo "The subdomain $subdomain is a A record and points to $result"
+    # Extract IP and verify against expected IP
+    echo "$record" | awk -v sub="$subdomain" -v exp_ip="${expected_ips[$subdomain]}" '
+        /IN A/ {
+            split($5, parts, ".")
+            ip = $5
+            print "The subdomain " sub " is a A record and points to " ip
+            
+            # Optional: You could add a check for expected IP
+            # if (ip != exp_ip) {
+            #     print "Warning: IP " ip " does not match expected IP " exp_ip
+            # }
+        }
+    '
+}
+
+# Main function to handle script logic
+main() {
+    local domain=$1
+    local subdomain=$2
+
+    # Predefined order of subdomains when no specific subdomain is provided
+    local default_subdomains=("www" "lb-01" "web-01" "web-02")
+
+    # If no subdomain specified, loop through default subdomains
+    if [ -z "$subdomain" ]; then
+        for sub in "${default_subdomains[@]}"; do
+            get_subdomain_info "$domain" "$sub"
+        done
     else
-        echo "The subdomain $subdomain is a A record and points to $result"
+        # If specific subdomain provided
+        get_subdomain_info "$domain" "$subdomain"
     fi
 }
 
-# Main script logic
-domain="$1"
-subdomain="$2"
-
-# Check if domain parameter is provided
-if [ -z "$domain" ]; then
-    echo "Error: Domain parameter is required"
-    exit 1
-fi
-
-# If no subdomain is specified, check default subdomains
-if [ -z "$subdomain" ]; then
-    default_subdomains=("www" "web-01" "web-02")
-    for sub in "${default_subdomains[@]}"; do
-        display_info "$domain" "$sub"
-    done
-else
-    # If a specific subdomain is provided
-    display_info "$domain" "$subdomain"
-=======
-domain=$1
-if [ "$#" -eq 2 ]; then
-   sub=$2
-else
-	sub=("www" "lb-01" "web-01" "web-02")
->>>>>>> 644bf6e1e1ed22609ee4f477162fac10f186de69
-fi
-for subdomain in "${sub[@]}"; do
-    echo -n "The subdomain $subdomain"
-    dig "$subdomain.$domain" | grep -A1 'ANSWER SECTION:' | tail -n -1 | awk '{ print " is a " $4 " record and points to " $5}'
-done
+# Call main function with script arguments
+main "$@"
