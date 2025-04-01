@@ -1,56 +1,24 @@
 #!/usr/bin/env bash
-# This script provides information about domain and subdomain records
+# script to configure subdomains and display information about them.
 
-# Function to get subdomain information
-get_subdomain_info() {
-    local domain=$1
-    local subdomain=$2
-    
-    # Predefined subdomains with their expected IPs
-    declare -A expected_ips=(
-        ["www"]="44.201.214.235"     # lb-01 IP
-        ["lb-01"]="44.201.214.235"   # lb-01 IP
-        ["web-01"]="54.164.180.162"  # web-01 IP
-        ["web-02"]="100.24.5.99"    # web-02 IP
-    )
+function get_sub_info {
+  local domain=$1
+  local subdomain=$2
+  local full_domain="${subdomain}.${domain}"
+  local record_info=$(dig +noall +answer ${full_domain} | awk '{print $4, $5}')
+  local record_type=$(echo $record_info | awk '{print $1}')
+  local record_ip=$(echo $record_info | awk '{print $2}')
 
-    # Dig the subdomain
-    local record
-    record=$(dig "$subdomain"."$domain" | grep -A1 'ANSWER SECTION:')
-    
-    # Extract IP and verify against expected IP
-    echo "$record" | awk -v sub="$subdomain" -v exp_ip="${expected_ips[$subdomain]}" '
-        /IN A/ {
-            split($5, parts, ".")
-            ip = $5
-            print "The subdomain " sub " is a A record and points to " ip
-            
-            # Optional: You could add a check for expected IP
-            # if (ip != exp_ip) {
-            #     print "Warning: IP " ip " does not match expected IP " exp_ip
-            # }
-        }
-    '
+  echo "The subdomain ${subdomain} is a ${record_type} record and points to ${record_ip}"
 }
 
-# Main function to handle script logic
-main() {
-    local domain=$1
-    local subdomain=$2
+domain=$1
+subdomain=$2
 
-    # Predefined order of subdomains when no specific subdomain is provided
-    local default_subdomains=("www" "lb-01" "web-01" "web-02")
-
-    # If no subdomain specified, loop through default subdomains
-    if [ -z "$subdomain" ]; then
-        for sub in "${default_subdomains[@]}"; do
-            get_subdomain_info "$domain" "$sub"
-        done
-    else
-        # If specific subdomain provided
-        get_subdomain_info "$domain" "$subdomain"
-    fi
-}
-
-# Call main function with script arguments
-main "$@"
+if [[ -z "$subdomain" ]]; then
+  for sub in www lb-01 web-01 web-02; do
+    get_sub_info $domain $sub
+  done
+else
+  get_sub_info $domain $subdomain
+fi
