@@ -50,14 +50,3 @@ backend lb-back
 # DOMAIN='example.com' sudo -E bash -c 'cat /etc/letsencrypt/live/$DOMAIN/fullchain.pem /etc/letsencrypt/live/$DOMAIN/privkey.pem > /etc/haproxy/certs/$DOMAIN.pem'
 
 ## + Auto renewal steps using cron job
-
-
-
-
-
-
-
-
-
-
-    
