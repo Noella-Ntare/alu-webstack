@@ -38,15 +38,15 @@ backend lb-back
 ##Ignore the code below if you've already got the certificate and configured your lb
 ## Check out this article for more info: https://www.digitalocean.com/community/tutorials/how-to-secure-haproxy-with-let-s-encrypt-on-ubuntu-14-04#introduction
 ## HAproxy configuration steps to get https certificate
-# sudo add-apt-repository ppa:certbot/certbot
-# sudo apt-get update
+ sudo add-apt-repository ppa:certbot/certbot
+ sudo apt-get update
 
-# sudo apt-get install certbot
-# sudo service haproxy stop
+ sudo apt-get install certbot
+ sudo service haproxy stop
 
-# sudo certbot certonly --standalone --preferred-challenges http --http-01-port 80 -d www.example.com
-# sudo mkdir -p /etc/haproxy/certs
+ sudo certbot certonly --standalone --preferred-challenges http --http-01-port 80 -d www.ntare.tech
+ sudo mkdir -p /etc/haproxy/certs
 
-# DOMAIN='example.com' sudo -E bash -c 'cat /etc/letsencrypt/live/$DOMAIN/fullchain.pem /etc/letsencrypt/live/$DOMAIN/privkey.pem > /etc/haproxy/certs/$DOMAIN.pem'
+ DOMAIN='ntare.tech' sudo -E bash -c 'cat /etc/letsencrypt/live/$DOMAIN/fullchain.pem /etc/letsencrypt/live/$DOMAIN/privkey.pem > /etc/haproxy/certs/$DOMAIN.pem'
 
 ## + Auto renewal steps using cron job
