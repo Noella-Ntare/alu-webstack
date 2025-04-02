@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# script to configure subdomains and display information about them.
+# script to configure subdomains and display information about the
 
-<<<<<<< HEAD
 display_info() {
     local domain="$1"
     local subdomain="$2"
@@ -51,7 +50,7 @@ function get_sub_info {
   local record_info=$(dig +noall +answer ${full_domain} | awk '{print $4, $5}')
   local record_type=$(echo $record_info | awk '{print $1}')
   local record_ip=$(echo $record_info | awk '{print $2}')
->>>>>>> 7726452a070ff891d7bfe341d9ccbce985fe611a
+
 
   echo "The subdomain ${subdomain} is a ${record_type} record and points to ${record_ip}"
 }
