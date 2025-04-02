@@ -64,7 +64,7 @@ if [[ -z "$subdomain" ]]; then
   done
 else
 
-	sub=("www" "lb-01" "web-01" "web-02"
+	sub=("www" "lb-01" "web-01" "web-02")
 
   get_sub_info $domain $subdomain
 fi
