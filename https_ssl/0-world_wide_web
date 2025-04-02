@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# script to config domain zone to point to load balancer
-# add more subdomains and display info about them
+# script to configure subdomains and display information about them.
 
+<<<<<<< HEAD
 display_info() {
     local domain="$1"
     local subdomain="$2"
@@ -43,30 +43,30 @@ display_info() {
 # Main script logic
 domain="$1"
 subdomain="$2"
-
-# Check if domain parameter is provided
-if [ -z "$domain" ]; then
-    echo "Error: Domain parameter is required"
-    exit 1
-fi
-
-# If no subdomain is specified, check default subdomains
-if [ -z "$subdomain" ]; then
-    default_subdomains=("www" "web-01" "web-02")
-    for sub in "${default_subdomains[@]}"; do
-        display_info "$domain" "$sub"
-    done
-else
-    # If a specific subdomain is provided
-    display_info "$domain" "$subdomain"
 =======
+function get_sub_info {
+  local domain=$1
+  local subdomain=$2
+  local full_domain="${subdomain}.${domain}"
+  local record_info=$(dig +noall +answer ${full_domain} | awk '{print $4, $5}')
+  local record_type=$(echo $record_info | awk '{print $1}')
+  local record_ip=$(echo $record_info | awk '{print $2}')
+>>>>>>> 7726452a070ff891d7bfe341d9ccbce985fe611a
+
+  echo "The subdomain ${subdomain} is a ${record_type} record and points to ${record_ip}"
+}
+
 domain=$1
-if [ "$#" -eq 2 ]; then
-   sub=$2
+subdomain=$2
+
+if [[ -z "$subdomain" ]]; then
+  for sub in www lb-01 web-01 web-02; do
+    get_sub_info $domain $sub
+  done
 else
+<<<<<<< HEAD
 	sub=("www" "lb-01" "web-01" "web-02")
+=======
+  get_sub_info $domain $subdomain
+>>>>>>> 7726452a070ff891d7bfe341d9ccbce985fe611a
 fi
-for subdomain in "${sub[@]}"; do
-    echo -n "The subdomain $subdomain"
-    dig "$subdomain.$domain" | grep -A1 'ANSWER SECTION:' | tail -n -1 | awk '{ print " is a " $4 " record and points to " $5}'
-done
