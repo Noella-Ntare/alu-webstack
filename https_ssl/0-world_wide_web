@@ -2,7 +2,6 @@
 # script to config domain zone to point to load balancer
 # add more subdomains and display info about them
 
-<<<<<<< HEAD
 display_info() {
     local domain="$1"
     local subdomain="$2"
@@ -66,7 +65,6 @@ if [ "$#" -eq 2 ]; then
    sub=$2
 else
 	sub=("www" "lb-01" "web-01" "web-02")
->>>>>>> 644bf6e1e1ed22609ee4f477162fac10f186de69
 fi
 for subdomain in "${sub[@]}"; do
     echo -n "The subdomain $subdomain"
