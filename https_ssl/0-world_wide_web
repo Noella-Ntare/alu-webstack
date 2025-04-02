@@ -42,7 +42,7 @@ display_info() {
 # Main script logic
 domain="$1"
 subdomain="$2"
-=======
+
 function get_sub_info {
   local domain=$1
   local subdomain=$2
@@ -63,9 +63,8 @@ if [[ -z "$subdomain" ]]; then
     get_sub_info $domain $sub
   done
 else
-<<<<<<< HEAD
-	sub=("www" "lb-01" "web-01" "web-02")
-=======
+
+	sub=("www" "lb-01" "web-01" "web-02"
+
   get_sub_info $domain $subdomain
->>>>>>> 7726452a070ff891d7bfe341d9ccbce985fe611a
 fi
