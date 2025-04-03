@@ -1,24 +1,14 @@
 #!/usr/bin/env bash
-# script to configure subdomains and display information about them.
-
-function get_sub_info {
-  local domain=$1
-  local subdomain=$2
-  local full_domain="${subdomain}.${domain}"
-  local record_info=$(dig +noall +answer ${full_domain} | awk '{print $4, $5}')
-  local record_type=$(echo $record_info | awk '{print $1}')
-  local record_ip=$(echo $record_info | awk '{print $2}')
-
-  echo "The subdomain ${subdomain} is a ${record_type} record and points to ${record_ip}"
-}
+# script to config domain zone to point to load balancer
+# add more subdomains and display info about them
 
 domain=$1
-subdomain=$2
-
-if [[ -z "$subdomain" ]]; then
-  for sub in www lb-01 web-01 web-02; do
-    get_sub_info $domain $sub
-  done
+if [ "$#" -eq 2 ]; then
+   sub=$2
 else
-  get_sub_info $domain $subdomain
+	sub=("www" "lb-01" "web-01" "web-02")
 fi
+for subdomain in "${sub[@]}"; do
+    echo -n "The subdomain $subdomain"
+    dig "$subdomain.$domain" | grep -A1 'ANSWER SECTION:' | tail -n -1 | awk '{ print " is a " $4 " record and points to " $5}'
+done
